@@ -1,6 +1,5 @@
 from vpython import *
-from time import sleep
-from random import randint
+
 
 class Cube:
     class cubies:

@@ -1,6 +1,4 @@
 from vpython import *
-from time import sleep
-from random import randint
 
 from methods import methods
 
