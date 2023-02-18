@@ -27,7 +27,7 @@ class rubiks_cube(methods):
                 self.rotate("cw")
 
         def mid_whites():
-            def big(f:rubiks_cube.cube):
+            def big(f:rubiks_cube.cubies):
                 for item in ["front", "back", "top", "bottom", "left", "right"]:
                     f.dicto[item].pos*=1.5
                     f.dicto[item].size*=1.5
@@ -216,11 +216,11 @@ class rubiks_cube(methods):
                     mid_white_helper(temp_color)
                     small(temp_color)
 
-        def big(f:rubiks_cube.cube):
+        def big(f:rubiks_cube.cubies):
             for item in ["front", "back", "top", "bottom", "left", "right"]:
                 f.dicto[item].pos*=1.5
                 f.dicto[item].size*=1.5
-        def small(f:rubiks_cube.cube):
+        def small(f:rubiks_cube.cubies):
             for item in ["front", "back", "top", "bottom", "left", "right"]:
                 f.dicto[item].pos/=1.5
                 f.dicto[item].size/=1.5

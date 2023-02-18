@@ -2,10 +2,10 @@ from vpython import *
 from time import sleep
 from random import randint
 
-from rubik_1 import base
+from rubik_1 import Cube
 
 
-class methods(base):
+class methods(Cube):
     def move(self, char):
         if char=="U":
             for i in range(self.smoothness):
