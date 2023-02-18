@@ -2,7 +2,7 @@ from vpython import *
 from time import sleep
 from random import randint
 
-from rubik_1 import Cube
+from cube_class import Cube
 
 
 class methods(Cube):
