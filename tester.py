@@ -1,8 +1,8 @@
 from vpython import *
-from time import sleep, time
-from random import randint
+from time import time
 
-from rubik_3 import rubiks_cube
+
+from solver import rubiks_cube
 
 
 # scramble and solve multiple times
