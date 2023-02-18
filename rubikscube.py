@@ -301,24 +301,27 @@ class cube:
                 arr[top_gap + i*size_face//3+1][j]=[0]*3
         # borders
         a=min(top_gap, side_gap)//2
-        img=cv2.imread("spectrum.png")
-        for j in range(cols):
-            if j%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
-            for i in range(abs(int(a*numpy.sin(0.01965*j)))):
-                arr[i][j]=img[180][90+j//2]
-        for j in range(cols):
-            if j%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
-            for i in range(rows-1-abs(int(a*numpy.sin(0.01965*j))), rows):
-                arr[i][j]=img[180][1000-90-j//2]
-        for i in range(rows):
-            if i%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
-            for j in range(abs(int(a*numpy.sin(0.01965*i+0.6)))):
-                arr[i][j]=img[180][800-90-i//2]
-        for i in range(rows):
-            if i%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
-            for j in range(cols-1-abs(int(a*numpy.sin(0.01965*i+0.6))), cols):
-                arr[i][j]=img[180][150+i//2]
-        cv2.imwrite(f"{name}.jpg", arr)
+        img=cv2.imread("data/spectrum.png")
+        try:
+            if img.all()!=None:
+                for j in range(cols):
+                    if j%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
+                    for i in range(abs(int(a*numpy.sin(0.01965*j)))):
+                        arr[i][j]=img[180][90+j//2]
+                for j in range(cols):
+                    if j%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
+                    for i in range(rows-1-abs(int(a*numpy.sin(0.01965*j))), rows):
+                        arr[i][j]=img[180][1000-90-j//2]
+                for i in range(rows):
+                    if i%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
+                    for j in range(abs(int(a*numpy.sin(0.01965*i+0.6)))):
+                        arr[i][j]=img[180][800-90-i//2]
+                for i in range(rows):
+                    if i%20==0: b=[randint(0,255), randint(0,255), randint(0,255)]
+                    for j in range(cols-1-abs(int(a*numpy.sin(0.01965*i+0.6))), cols):
+                        arr[i][j]=img[180][150+i//2]
+        except: pass
+        cv2.imwrite(f"output/{name}.jpg", arr)
 
 
     def solve_cube_size3(self):
