@@ -1,8 +1,8 @@
 from vpython import *
 from time import time
+from .components.solver import rubiks_cube
+ 
 
-
-from solver import rubiks_cube
 
 
 # scramble and solve multiple times

@@ -301,7 +301,7 @@ class cube:
                 arr[top_gap + i*size_face//3+1][j]=[0]*3
         # borders
         a=min(top_gap, side_gap)//2
-        img=cv2.imread("data/spectrum.png")
+        img=cv2.imread("image/spectrum.png")
         try:
             if img.all()!=None:
                 for j in range(cols):
