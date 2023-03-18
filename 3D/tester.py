@@ -1,9 +1,13 @@
-from vpython import *
+# from vpython import *
 from time import time
-from .components.solver import rubiks_cube
- 
+import sys
+import os
 
+module_path = os.path.abspath(os.path.join('.', "components"))
+sys.path.append(module_path)
 
+from components import solver
+rubiks_cube = solver.RubiksCube
 
 # scramble and solve multiple times
 
@@ -19,5 +23,5 @@ from .components.solver import rubiks_cube
 # open commander
 
 
-obj=rubiks_cube(10, 0.1)
+obj = rubiks_cube(1, 0)
 obj.commander()

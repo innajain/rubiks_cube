@@ -1,11 +1,8 @@
 from vpython import *
-
 from methods import methods
-
-
-class rubiks_cube(methods):
+class RubiksCube(methods):
     def solve(self):
-        
+
         def rotate_to_correct_position():
             if self.f1.dicto["ct"].dicto['front'].color==color.white:
                 pass
@@ -20,12 +17,12 @@ class rubiks_cube(methods):
             elif self.f3.dicto["ct"].dicto['back'].color==color.white:
                 self.rotate("r")
                 self.rotate("r")
-            
+
             while self.f2.dicto["e1"].dicto['top'].color!=color.orange:
                 self.rotate("cw")
 
         def mid_whites():
-            def big(f:rubiks_cube.cubies):
+            def big(f:RubiksCube.cubies):
                 for item in ["front", "back", "top", "bottom", "left", "right"]:
                     f.dicto[item].pos*=1.5
                     f.dicto[item].size*=1.5
@@ -167,7 +164,7 @@ class rubiks_cube(methods):
                     small(temp_color)
 
                 if done(): break
-                # left            
+                # left
                 while True:
                     self.rotate("cw")
                     temp_color = mid_white_main("top")
@@ -179,7 +176,7 @@ class rubiks_cube(methods):
                     small(temp_color)
 
                 if done(): break
-                # right            
+                # right
                 while True:
                     self.rotate("acw")
                     temp_color = mid_white_main("top")
@@ -189,7 +186,7 @@ class rubiks_cube(methods):
                     self.move("B")
                     mid_white_helper(temp_color)
                     small(temp_color)
-                    
+
                 if done(): break
                 # bottom
                 while True:
@@ -214,15 +211,15 @@ class rubiks_cube(methods):
                     mid_white_helper(temp_color)
                     small(temp_color)
 
-        def big(f:rubiks_cube.cubies):
+        def big(f:RubiksCube.cubies):
             for item in ["front", "back", "top", "bottom", "left", "right"]:
                 f.dicto[item].pos*=1.5
                 f.dicto[item].size*=1.5
-        def small(f:rubiks_cube.cubies):
+        def small(f:RubiksCube.cubies):
             for item in ["front", "back", "top", "bottom", "left", "right"]:
                 f.dicto[item].pos/=1.5
                 f.dicto[item].size/=1.5
-        
+
         def corner_whites():
             def on_front():
                 def helper():
@@ -318,7 +315,7 @@ class rubiks_cube(methods):
                             self.move("B")
                         else: raise Exception
                     else: raise Exception
-                
+
                 def helper2():
                     if self.f1.dicto["c1"].dicto["top"].color==color.white:
                         big(self.f1.dicto["c1"])
@@ -411,7 +408,7 @@ class rubiks_cube(methods):
 
                 while True:
                     if helper()==False: break
-            
+
             def final_placing(n:int):
                 if n==1:
                     if self.f3.dicto["c2"].dicto["top"].color==color.white:
@@ -467,7 +464,7 @@ class rubiks_cube(methods):
                         small(a)
                     else:
                         raise Exception
-            
+
             def done():
                 return self.f1.dicto["c1"].dicto["front"].color==self.f1.dicto["c2"].dicto["front"].color==self.f1.dicto["c3"].dicto["front"].color==self.f1.dicto["c4"].dicto["front"].color==color.white and self.f1.dicto["c1"].dicto["top"].color==self.f1.dicto["c2"].dicto["top"].color==color.orange and self.f1.dicto["c3"].dicto["bottom"].color==self.f1.dicto["c4"].dicto["bottom"].color==color.red
             while not done():
@@ -554,7 +551,7 @@ class rubiks_cube(methods):
                 small(a)
                 while self.f1.dicto["ct"].dicto["front"].color!=color.orange:
                     self.rotate("r")
-        
+
         def yellow_plus():
 
             def algo():
@@ -612,9 +609,9 @@ class rubiks_cube(methods):
                 return
             else:
                 return
-            
+
         def yellow_corners():
-            
+
             def algo1():
                 self.move("U")
                 self.move("R")
@@ -636,7 +633,7 @@ class rubiks_cube(methods):
                 self.move("F")
 
 
-            lst=[0,0,0,0]   
+            lst=[0,0,0,0]
             for item in [self.f1.dicto["c1"], self.f1.dicto["c2"], self.f3.dicto["c1"], self.f3.dicto["c2"]]:
                 for fc1 in item.dicto:
                     for fc2 in item.dicto:
@@ -688,7 +685,7 @@ class rubiks_cube(methods):
             while self.f1.dicto["e1"].dicto["front"].color!=self.f1.dicto["ct"].dicto["front"].color:
                 self.move("U_")
 
-        
+
         rotate_to_correct_position()
         mid_whites()
         corner_whites()
@@ -698,4 +695,3 @@ class rubiks_cube(methods):
         self.rotate("d")
         yellow_corners()
         rotate_to_correct_position()
-
