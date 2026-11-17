@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Rubik's Cube</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root { --bg:#faf8f4; --fg:#2b2622; --muted:#7a7068; --card:#fff; --line:#e6e0d6; --accent:#b4531a; --bad:#c0392b; }
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:1080px; margin:0 auto; padding:32px 16px 48px; }
+header { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px 16px; }
+h1 { font-size:26px; margin:0; letter-spacing:-.01em; }
+header nav { display:flex; gap:16px; font-size:14px; }
+header a { color:var(--accent); text-decoration:none; }
+header a:hover { text-decoration:underline; }
+p.sub { color:var(--muted); margin:4px 0 20px; font-size:14px; }
+.layout { display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:16px; align-items:start; }
+.stage { position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; aspect-ratio:1 / 1; max-height:78vh; width:100%; }
+.stage canvas { display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+.stage canvas:active { cursor:grabbing; }
+#status { position:absolute; left:12px; bottom:10px; right:12px; font-size:13px; color:var(--muted); pointer-events:none; }
+#status.err { color:var(--bad); }
+.panel { display:flex; flex-direction:column; gap:12px; }
+.box { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; }
+.box h2 { font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+.keys { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+button, select { font:inherit; color:var(--fg); background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:7px 10px; cursor:pointer; min-height:36px; }
+button:hover:not(:disabled) { border-color:var(--accent); }
+button:focus-visible, select:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+button:disabled { opacity:.45; cursor:default; }
+button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+.keys button { padding:7px 0; font-variant-numeric:tabular-nums; }
+.row button { flex:1 1 auto; }
+label.speed { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin-top:10px; }
+label.speed select { flex:1; }
+p.hint { color:var(--muted); font-size:13px; margin:10px 0 0; }
+.net { display:grid; grid-template-columns:repeat(12, 1fr); gap:2px; max-width:312px; }
+.net i { aspect-ratio:1; border-radius:2px; }
+kbd { font:12px ui-monospace,SFMono-Regular,Menlo,monospace; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0 4px; background:var(--bg); }
+@media (max-width:820px) { .layout { grid-template-columns:1fr; } .stage { max-height:none; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Rubik's Cube</h1>
+    <nav><a href="https://github.com/innajain/rubiks_cube">Source on GitHub</a><a href="/">&larr; Home</a></nav>
+  </header>
+  <p class="sub">My VPython cube and its layer-by-layer solver. The original Python runs in your browser. Drag to look around.</p>
+
+  <div class="layout">
+    <div class="stage">
+      <canvas id="view" aria-label="3D Rubik's cube"></canvas>
+      <div id="status" role="status">Loading Python (about 10 MB the first time)…</div>
+    </div>
+
+    <div class="panel">
+      <div class="box">
+        <div class="row">
+          <button id="scramble" class="primary" disabled>Scramble</button>
+          <button id="solve" class="primary" disabled>Solve</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="finish" disabled>Finish now</button>
+          <button id="reset" disabled>Reset</button>
+        </div>
+        <label class="speed">Speed
+          <select id="speed">
+            <option value="slow">Slow</option>
+            <option value="normal" selected>Normal</option>
+            <option value="fast">Fast</option>
+            <option value="instant">Instant</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="box">
+        <h2>Turn a face</h2>
+        <div class="keys" id="moves"></div>
+        <h2 style="margin-top:14px">Middle slices</h2>
+        <div class="keys" id="slices"></div>
+        <h2 style="margin-top:14px">Turn the whole cube</h2>
+        <div class="keys" id="rots"></div>
+        <p class="hint">Keyboard: <kbd>U</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>B</kbd> <kbd>L</kbd> <kbd>R</kbd>, with <kbd>Shift</kbd> for the reverse turn.</p>
+      </div>
+
+      <div class="box">
+        <h2>Unfolded</h2>
+        <div class="net" id="net" aria-label="Unfolded cube"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+// ---- commands, named as in the old terminal commander ----------------------------------------------
+const MOVES = ["U", "U_", "D", "D_", "F", "F_", "B", "B_", "L", "L_", "R", "R_"];
+const SLICES = ["M1u", "M1d", "M2r", "M2l", "M3", "M3_"];
+const ROTS = ["u", "d", "l", "r", "cw", "acw"];
+const SPEEDS = { slow: [15, 0.6], normal: [10, 0.3], fast: [6, 0.1], instant: [1, 0] }; // [smoothness, seconds per turn]
+const label = (m) => m.replace(/_$/, "′");
+
+// ---- 3D view ------------------------------------------------------------------------------------------
+const canvas = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(6.2, 5, 8.6);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 6;
+controls.maxDistance = 22;
+scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8);
+sun.position.set(5, 9, 7);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6);
+fill.position.set(-6, -3, -5);
+scene.add(fill);
+
+// Sticker colours from the project's show() (its BGR values, turned into RGB).
+const PALETTE = {
+  "1,1,1": "#ffffff", "1,1,0": "#ffdd00", "1,0,0": "#dc422f", "1,0.6,0": "#e87000",
+  "0,0,1": "#3d81f6", "0,1,0": "#009d54", "0,0,0": "#1c1b1a",
+};
+const NET_COLORS = { w: "#ffffff", y: "#ffdd00", r: "#dc422f", o: "#e87000", b: "#3d81f6", g: "#009d54", k: "#1c1b1a" };
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const materials = {};
+function material(r, g, b) {
+  const key = `${+r.toFixed(2)},${+g.toFixed(2)},${+b.toFixed(2)}`;
+  if (!materials[key]) materials[key] = new THREE.MeshStandardMaterial({ color: PALETTE[key] || new THREE.Color(r, g, b), roughness: 0.55, metalness: 0 });
+  return materials[key];
+}
+let meshes = [];
+function clearMeshes() { for (const m of meshes) if (m) scene.remove(m); meshes = []; }
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.round(w * renderer.getPixelRatio()) || canvas.height !== Math.round(h * renderer.getPixelRatio())) {
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+}
+
+// ---- playback of the frames Python recorded --------------------------------------------------------
+// Each frame: the boxes that changed (14 floats each: id, pos xyz, quaternion wxyz, size xyz, colour rgb),
+// shown for dt seconds (whatever the project passed to sleep()).
+const queue = [];
+let job = null, wait = 0, pending = 0;
+
+function applyFrame(j) {
+  const n = j.lens[j.i], d = j.data;
+  for (let o = j.off, end = j.off + n; o < end; o += 14) {
+    const id = d[o];
+    let m = meshes[id];
+    if (!m) { m = meshes[id] = new THREE.Mesh(geometry); scene.add(m); }
+    m.position.set(d[o + 1], d[o + 2], d[o + 3]);
+    m.quaternion.set(d[o + 5], d[o + 6], d[o + 7], d[o + 4]);
+    m.scale.set(d[o + 8], d[o + 9], d[o + 10]);
+    m.material = material(d[o + 11], d[o + 12], d[o + 13]);
+  }
+  j.off += n;
+  j.i += 1;
+}
+function begin(j) { job = j; wait = 0; if (j.fresh) clearMeshes(); }
+function finish(j) {
+  drawNet(j.net);
+  if (j.error) setStatus("Stopped: " + j.error, true);
+  job = null;
+  if (queue.length) begin(queue.shift());
+}
+function step(dt) {
+  if (!job && queue.length) begin(queue.shift());
+  if (!job) return;
+  wait -= dt;
+  while (job && wait <= 0) {
+    if (job.i >= job.dts.length) { finish(job); continue; }
+    wait += job.dts[job.i];
+    applyFrame(job);
+  }
+  updateUi();
+}
+function finishNow() {
+  if (!job && !queue.length) return;
+  if (!job) begin(queue.shift());
+  while (job) {
+    while (job.i < job.dts.length) applyFrame(job);
+    finish(job);
+  }
+  wait = 0;
+  updateUi();
+}
+
+// ---- Python worker -------------------------------------------------------------------------------
+const worker = new Worker("worker.js");
+let ready = false, nextId = 1, dropBelow = 0;
+const freshIds = new Set();
+worker.onmessage = (e) => {
+  const r = e.data;
+  pending--;
+  if (r.id < dropBelow) { updateUi(); return; } // answered before a Reset: nothing left to show
+  if (!r.ok) { setStatus("Python error: " + r.error, true); updateUi(); return; }
+  if (!ready) { ready = true; setStatus(""); }
+  queue.push({ ...r, i: 0, off: 0, fresh: freshIds.delete(r.id) });
+  updateUi();
+};
+worker.onerror = (e) => { setStatus("Could not start Python: " + (e.message || "worker failed"), true); };
+function send(cmd, arg = "") {
+  const [smoothness, seconds] = SPEEDS[document.getElementById("speed").value];
+  const id = nextId++;
+  if (cmd === "new") { freshIds.add(id); dropBelow = id; }
+  pending++;
+  worker.postMessage({ id, cmd, arg, smoothness, seconds });
+  updateUi();
+}
+
+// ---- controls ---------------------------------------------------------------------------------------
+const statusEl = document.getElementById("status");
+let statusLocked = false;
+function setStatus(text, err = false) { statusEl.textContent = text; statusEl.classList.toggle("err", err); statusLocked = err; }
+function updateUi() {
+  const busy = pending > 0 || job !== null || queue.length > 0;
+  document.querySelectorAll("button").forEach((b) => { if (b.id !== "finish") b.disabled = !ready; });
+  document.getElementById("finish").disabled = !ready || !(job || queue.length);
+  if (ready && !statusLocked) setStatus(busy ? (pending ? "Thinking…" : queue.length ? "Playing… (" + queue.length + " more queued)" : "Playing…") : "");
+}
+function addButtons(el, list, cmd, title) {
+  for (const m of list) {
+    const b = document.createElement("button");
+    b.textContent = cmd === "rot" ? m : label(m);
+    b.title = title + " " + m;
+    b.disabled = true;
+    b.onclick = () => { statusLocked = false; send(cmd, m); };
+    el.appendChild(b);
+  }
+}
+addButtons(document.getElementById("moves"), MOVES, "move", "Move");
+addButtons(document.getElementById("slices"), SLICES, "move", "Move");
+addButtons(document.getElementById("rots"), ROTS, "rot", "rot");
+document.getElementById("scramble").onclick = () => { statusLocked = false; send("scramble"); };
+document.getElementById("solve").onclick = () => { statusLocked = false; send("solve"); };
+document.getElementById("reset").onclick = () => { statusLocked = false; queue.length = 0; job = null; send("new"); };
+document.getElementById("finish").onclick = finishNow;
+addEventListener("keydown", (e) => {
+  if (!ready || e.metaKey || e.ctrlKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName)) return;
+  const k = e.key.toUpperCase();
+  if ("UDFBLR".includes(k) && k.length === 1) { e.preventDefault(); statusLocked = false; send("move", e.shiftKey ? k + "_" : k); }
+});
+
+// ---- unfolded net, same layout as show(): left | front | right | back, top above, bottom below --------
+const netEl = document.getElementById("net");
+const NET_POS = [[3, 0], [0, 3], [3, 3], [6, 3], [9, 3], [3, 6]]; // top, left, front, right, back, bottom (col, row)
+const cells = [];
+for (let r = 0; r < 9; r++) for (let c = 0; c < 12; c++) { const i = document.createElement("i"); netEl.appendChild(i); cells.push(i); }
+function drawNet(s) {
+  if (!s) return;
+  cells.forEach((c) => { c.style.background = "transparent"; c.style.outline = "none"; });
+  NET_POS.forEach(([c0, r0], f) => {
+    for (let k = 0; k < 9; k++) {
+      const cell = cells[(r0 + Math.floor(k / 3)) * 12 + c0 + (k % 3)];
+      cell.style.background = NET_COLORS[s[f * 9 + k]];
+      cell.style.outline = "1px solid #1c1b1a";
+    }
+  });
+}
+
+// ---- loop ---------------------------------------------------------------------------------------
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  step(Math.min(clock.getDelta(), 0.25));
+  resize();
+  controls.update();
+  renderer.render(scene, camera);
+});
+send("new");
+</script>
+</body>
+</html>
